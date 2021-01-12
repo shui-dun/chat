@@ -1,0 +1,4 @@
+.idea
+chatClient/target
+chatServer/target
+*.properties
