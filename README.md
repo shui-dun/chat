@@ -4,6 +4,18 @@
 
 ## 运行方法
 ### 客户端
+```
 java -cp chatClient.jar com.sd.client.Main
+```
+或
+```
+java -jar chatClient.jar
+```
 ### 服务器
-java -cp chatServer.jar com.sd.server.Main
+```
+nohup java -cp chatServer.jar com.sd.server.Main &
+```
+或
+```
+nohup java -jar chatServer.jar &
+```

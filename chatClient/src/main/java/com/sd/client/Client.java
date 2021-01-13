@@ -2,13 +2,13 @@ package com.sd.client;
 
 
 import com.sd.Message;
-import org.omg.IOP.CodecPackage.FormatMismatch;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.InputMismatchException;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -40,9 +40,10 @@ public class Client {
             out.writeObject(new Message(user, "server", "init"));
             Message result = (Message) in.readObject();
             if (result.getFrom().equals("server") && result.getContent().equals("alreadyOnline")) {
-                System.out.println("该用户已上线，连接失败");
+                System.out.println(user + " is already online, connection failed");
                 return;
             }
+            System.out.println("welcome, " + user);
             Receiver receiver = new Receiver(socket, in);
             receiver.start();
             Scanner scanner = new Scanner(System.in);
@@ -55,7 +56,7 @@ public class Client {
                     }
                     Message message = parseInput(input);
                     out.writeObject(message);
-                } catch (FormatMismatch e) {
+                } catch (InputMismatchException e) {
                     System.out.println(e.getMessage());
                 }
             }
@@ -64,20 +65,16 @@ public class Client {
         }
     }
 
-    private Message parseInput(String s) throws FormatMismatch {
+    private Message parseInput(String s) throws InputMismatchException {
         Message message = new Message();
         message.setFrom(user);
         String[] strings = s.split(" ", 2);
         if (strings.length != 2) {
-            throw new FormatMismatch("输入格式错误，应为 '对方名称 消息内容'");
+            throw new InputMismatchException("format error e.g 'jack hello'");
         }
         message.setTo(strings[0]);
         message.setContent(strings[1]);
         return message;
-    }
-
-    private class FormatException extends RuntimeException{
-
     }
 
     private class Receiver extends Thread {

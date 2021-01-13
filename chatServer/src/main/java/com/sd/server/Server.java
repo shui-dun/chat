@@ -53,12 +53,12 @@ public class Server {
             ) {
                 Message initMessage = (Message) in.readObject();
                 userName = initMessage.getFrom();
-                System.out.println(userName + "登录系统");
                 if (userMap.get(userName) != null) {
                     out.writeObject(new Message("server", userName, "alreadyOnline"));
                     return;
                 }
                 out.writeObject(new Message("server", userName, "ok"));
+                System.out.println(userName + " log in");
                 userMap.put(userName, out);
                 while (true) {
                     Message message = (Message) in.readObject();
