@@ -1,4 +1,5 @@
 .idea
+target
 chatClient/target
 chatServer/target
 commons/target

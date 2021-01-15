@@ -10,9 +10,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private HashMap<String, ObjectOutputStream> userMap = new HashMap<>();
+
+    private ExecutorService pool = Executors.newCachedThreadPool();
 
     private int port;
 
@@ -30,15 +34,14 @@ public class Server {
         try (ServerSocket server = new ServerSocket(port)) {
             while (true) {
                 Socket socket = server.accept();
-                Handler handler = new Handler(socket);
-                handler.start();
+                pool.execute(new Handler(socket));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private class Handler extends Thread {
+    private class Handler implements Runnable {
         private Socket socket;
 
         public Handler(Socket socket) {
@@ -63,9 +66,9 @@ public class Server {
                 while (true) {
                     Message message = (Message) in.readObject();
                     ObjectOutputStream to = userMap.get(message.getTo());
-                    if (to!=null) {
+                    if (to != null) {
                         to.writeObject(message);
-                    }else {
+                    } else {
                         userMap.get(message.getFrom()).writeObject(new Message("server", message.getFrom(), "userNotOnline"));
                     }
                 }
