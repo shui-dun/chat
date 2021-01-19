@@ -3,10 +3,10 @@ package com.sd.client;
 
 import com.sd.Message;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.InputMismatchException;
 import java.util.Properties;
@@ -30,15 +30,15 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void run() {
         try (Socket socket = new Socket(server, serverPort);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())
-        ) {
-            out.writeObject(new Message(user, "server", "init"));
-            Message result = (Message) in.readObject();
+             OutputStream out = socket.getOutputStream();
+             BufferedInputStream in = new BufferedInputStream(socket.getInputStream())) {
+            out.write(new Message(user, "server", "init").toString().getBytes());
+            Message result = Message.fromStream(in);
             if (result.getFrom().equals("server") && result.getContent().equals("alreadyOnline")) {
                 System.out.println(user + " is already online, connection failed");
                 return;
@@ -55,14 +55,18 @@ public class Client {
                         System.exit(0);
                     }
                     Message message = parseInput(input);
-                    out.writeObject(message);
+                    out.write(message.toString().getBytes());
                 } catch (InputMismatchException e) {
                     System.out.println(e.getMessage());
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        new Client().run();
     }
 
     private Message parseInput(String s) throws InputMismatchException {
@@ -79,9 +83,9 @@ public class Client {
 
     private class Receiver extends Thread {
         private Socket socket;
-        private ObjectInputStream in;
+        private InputStream in;
 
-        public Receiver(Socket socket, ObjectInputStream in) {
+        public Receiver(Socket socket, InputStream in) {
             this.socket = socket;
             this.in = in;
         }
@@ -90,10 +94,10 @@ public class Client {
         public void run() {
             try {
                 while (true) {
-                    Message message = (Message) in.readObject();
+                    Message message = Message.fromStream(in);
                     System.out.printf("%s << %s\n\n", message.getFrom(), message.getContent());
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
