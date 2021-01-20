@@ -30,15 +30,16 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void run() {
         try (Socket socket = new Socket(server, serverPort);
              OutputStream out = socket.getOutputStream();
-             BufferedInputStream in = new BufferedInputStream(socket.getInputStream())) {
+             InputStream in = new BufferedInputStream(socket.getInputStream())) {
+            // 请求创建连接
             out.write(new Message(user, "server", "init").toString().getBytes());
             Message result = Message.fromStream(in);
+            // 判断是否连接成功
             if (result.getFrom().equals("server") && result.getContent().equals("alreadyOnline")) {
                 System.out.println(user + " is already online, connection failed");
                 return;
@@ -49,6 +50,7 @@ public class Client {
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 try {
+                    // 将用户输入发送给服务器
                     String input = scanner.nextLine();
                     System.out.println();
                     if (input.equals("bye")) {
@@ -81,6 +83,9 @@ public class Client {
         return message;
     }
 
+    /**
+     * 接收来自服务端的消息
+     */
     private class Receiver extends Thread {
         private Socket socket;
         private InputStream in;
