@@ -8,7 +8,7 @@
 * 执行命令
 
   ```
-  java -cp chatClient.jar com.sd.client.Main
+  java -cp chatClient.jar com.sd.client.Client
   ```
   或
   ```
@@ -19,7 +19,7 @@
 * 执行命令
 
   ```
-  nohup java -cp chatServer.jar com.sd.server.Main &
+  nohup java -cp chatServer.jar com.sd.server.Server &
   ```
   或
   ```
